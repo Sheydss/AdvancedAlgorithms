@@ -3,19 +3,13 @@ import graph as g
 
 if __name__ == '__main__':
     # Exemple d'utilisation
-    g = g.Graph(2000, 5)
-    #g.print_graph()
+    num_nodes = 2000
+    max_edges_per_node = 5
 
-    start_node = 1
-    end_node = 1578
-
-    path, cost = g.dijkstra(start_node, end_node)
-    if path is None:
-        print("No path found.")
-    else:
-        print(f"Shortest Path from {start_node} to {end_node} :", path)
-        print("Cost:", cost)
+    graph = g.Graph(num_nodes, max_edges_per_node)
 
 
+    start = 1
+    end = 1850
 
-
+    graph.dijkstra(start, end)
