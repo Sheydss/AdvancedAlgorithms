@@ -3,6 +3,7 @@ import random
 import time
 
 import networkx as nx
+import matplotlib.pyplot as plt
 
 
 class Graph:
@@ -25,7 +26,8 @@ class Graph:
 
             for dest_node in dest_nodes:
                 weight = random.randint(min_weight, max_weight)
-                self.graph.add_edge(node, dest_node, weight=weight)
+                if node != dest_node:
+                    self.graph.add_edge(node, dest_node, weight=weight)
         toc = time.perf_counter()
         print(f"Generation done in {toc - tic:0.4f} seconds")
         print("---------------------------------------------------------")
@@ -84,7 +86,17 @@ class Graph:
         path.reverse()
         return path
 
-    def print_graph(self):
+    def print_dijkstra(self, path):
+        for i in path:
+            list_values = []
+            print(f"Node : {i}")
+            for edge in self.graph.neighbors(i):
+                values = dict()
+                values[edge] = self.graph[i][edge]['weight']
+                list_values.append(values)
+            print(list_values)
+
+    def data_graph(self):
         for node in self.graph.nodes:
             list_values = []
             print(f"Node : {node}")
@@ -93,3 +105,25 @@ class Graph:
                 values[edge] = self.graph[node][edge]['weight']
                 list_values.append(values)
             print(list_values)
+
+    def plot_graph(self):
+        plt.show()
+
+    def color_path(self, path, color):
+        # Obtenir les arêtes du chemin
+        edges = [(path[i], path[i + 1]) for i in range(len(path) - 1)]
+
+        # Obtenir les positions des nœuds pour le tracé
+        pos = nx.spring_layout(self.graph)
+
+        # Dessiner le graphe avec les arêtes du chemin coloriées
+        nx.draw(self.graph, pos=pos, width=0.5, with_labels=True)
+        nx.draw_networkx_edges(self.graph, pos=pos, edgelist=edges, edge_color=color)
+
+        plt.show()
+
+
+
+
+
+
