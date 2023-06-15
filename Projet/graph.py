@@ -3,17 +3,14 @@ import math
 import random
 import time
 
-import networkx as nx
 import matplotlib.pyplot as plt
+import networkx as nx
 
 
 class Graph:
     def __init__(self, num_nodes, max_edge):
         self.graph = nx.Graph()
         self.generate_random_graph(num_nodes, max_edge, 10, 100)
-
-    import random
-    import math
 
     def generate_random_graph(self, num_nodes, max_edges_per_node, min_weight, max_weight):
         print("---------------------------------------------------------")
@@ -45,7 +42,7 @@ class Graph:
 
     def dijkstra(self, start, end):
         print("---------------------------------------------------------")
-        print(f"Dijkstra : From {start} to {end}")
+        print(f"Dijkstra Search: From {start} to {end}")
         tic = time.perf_counter()
 
         distances = {node: float('inf') for node in self.graph.nodes}
@@ -117,8 +114,6 @@ class Graph:
                 list_values.append(values)
             print(list_values)
 
-    import matplotlib.pyplot as plt
-
     def plot_graph(self, path=None, color='black'):
         # Obtenir les arêtes du chemin
         if path is not None:
@@ -136,13 +131,66 @@ class Graph:
 
         plt.show()
 
+    def a_star(self, start, end):
+        print("---------------------------------------------------------")
+        print(f"A* Search: From {start} to {end}")
+        tic = time.perf_counter()
 
+        # Distances du point de départ à chaque nœud (g-cost)
+        distances = {node: float('inf') for node in self.graph.nodes}
+        distances[start] = 0
 
+        # Estimations des coûts du point de départ à chaque nœud (f-cost)
+        estimations = {node: self.heuristic(node, end) for node in self.graph.nodes}
 
+        # File de priorité pour l'exploration des nœuds
+        heap = [(estimations[start], 0, start)]  # (f-cost, g-cost, node)
 
+        # Dictionnaire pour stocker les nœuds précédents sur le chemin optimal
+        came_from = {}
 
+        while heap:
+            _, current_cost, current_node = heapq.heappop(heap)
 
+            if current_node == end:
+                break
 
+            if current_cost > distances[current_node]:
+                continue
 
+            for neighbor in self.graph.neighbors(current_node):
+                cost = self.graph[current_node][neighbor]['weight']
+                new_cost = current_cost + cost
+                if new_cost < distances[neighbor]:
+                    distances[neighbor] = new_cost
+                    priority = new_cost + self.heuristic(neighbor, end)
+                    heapq.heappush(heap, (priority, new_cost, neighbor))
+                    came_from[neighbor] = current_node
 
+        if end not in came_from:
+            return None, None
 
+        path = self.rpath(start, end, came_from)
+        toc = time.perf_counter()
+
+        print(f"Path: {path} Cost: {distances[end]}")
+        print(f"Duration: {toc - tic:0.4f} seconds")
+        print("---------------------------------------------------------")
+
+        return path, distances[end]
+
+    def heuristic(self, node, goal):
+        # Heuristique utilisée pour estimer le coût restant (ici, distance euclidienne)
+        pos1 = self.graph.nodes[node]['pos']
+        pos2 = self.graph.nodes[goal]['pos']
+        distance = math.sqrt((pos2[0] - pos1[0]) ** 2 + (pos2[1] - pos1[1]) ** 2)
+        return distance
+
+    def rpath(self, start, end, came_from):
+        current_node = end
+        path = [current_node]
+        while current_node != start:
+            current_node = came_from[current_node]
+            path.append(current_node)
+        path.reverse()
+        return path
