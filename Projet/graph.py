@@ -1,4 +1,5 @@
 import heapq
+import math
 import random
 import time
 
@@ -11,23 +12,33 @@ class Graph:
         self.graph = nx.Graph()
         self.generate_random_graph(num_nodes, max_edge, 10, 100)
 
+    import random
+    import math
+
     def generate_random_graph(self, num_nodes, max_edges_per_node, min_weight, max_weight):
         print("---------------------------------------------------------")
         print(f"Generating Graph with {num_nodes} nodes")
         tic = time.perf_counter()
 
-        # Ajouter les nœuds au graphe
-        self.graph.add_nodes_from(range(num_nodes))
+        # Ajouter les nœuds au graphe avec des coordonnées aléatoires
+        for node in range(num_nodes):
+            x = random.uniform(0, 100)
+            y = random.uniform(0, 100)
+            self.graph.add_node(node, pos=(x, y))
 
-        # Générer les arêtes avec des poids aléatoires
+        # Générer les arêtes avec des poids correspondant à la distance euclidienne
         for node in range(num_nodes):
             num_edges = random.randint(1, max_edges_per_node)
             dest_nodes = random.sample(range(num_nodes), num_edges)
 
             for dest_node in dest_nodes:
-                weight = random.randint(min_weight, max_weight)
                 if node != dest_node:
+                    pos1 = self.graph.nodes[node]['pos']
+                    pos2 = self.graph.nodes[dest_node]['pos']
+                    distance = math.sqrt((pos2[0] - pos1[0]) ** 2 + (pos2[1] - pos1[1]) ** 2)
+                    weight = int(distance)
                     self.graph.add_edge(node, dest_node, weight=weight)
+
         toc = time.perf_counter()
         print(f"Generation done in {toc - tic:0.4f} seconds")
         print("---------------------------------------------------------")
@@ -106,21 +117,29 @@ class Graph:
                 list_values.append(values)
             print(list_values)
 
-    def plot_graph(self):
-        plt.show()
+    import matplotlib.pyplot as plt
 
-    def color_path(self, path, color):
+    def plot_graph(self, path=None, color='black'):
         # Obtenir les arêtes du chemin
-        edges = [(path[i], path[i + 1]) for i in range(len(path) - 1)]
+        if path is not None:
+            edges = [(path[i], path[i + 1]) for i in range(len(path) - 1)]
 
         # Obtenir les positions des nœuds pour le tracé
-        pos = nx.spring_layout(self.graph)
+        pos = nx.get_node_attributes(self.graph, 'pos')
 
         # Dessiner le graphe avec les arêtes du chemin coloriées
-        nx.draw(self.graph, pos=pos, width=0.5, with_labels=True)
-        nx.draw_networkx_edges(self.graph, pos=pos, edgelist=edges, edge_color=color)
+        nx.draw(self.graph, pos=pos, width=0.8, with_labels=True)
+        if path is None:
+            nx.draw_networkx_edges(self.graph, pos=pos, edge_color=color)
+        else:
+            nx.draw_networkx_edges(self.graph, pos=pos, edgelist=edges, edge_color=color)
 
         plt.show()
+
+
+
+
+
 
 
 
