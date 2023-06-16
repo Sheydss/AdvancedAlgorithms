@@ -1,19 +1,20 @@
 from reportlab.lib.colors import red
 
-import graph as g
+import algoRecuitSimule as algo
 
 if __name__ == '__main__':
     # Exemple d'utilisation
     num_nodes = 20
     max_edges_per_node = 5
 
-    graph = g.Graph(num_nodes, max_edges_per_node)
+    graph = algo.Graph(num_nodes, max_edges_per_node)
 
-    start = 1
-    end = 5
+    # Exemple d'utilisation
+    cities = [
+        1,3,5
+    ]
 
-    graph.a_star(start, end)
-    path, distance = graph.dijkstra(start, end)
-    graph.plot_graph(path, 'red')
-
+    best_path, best_distance = algo.Graph.simulated_annealing(cities)
+    print("Meilleur chemin trouvé:", best_path)
+    print("Distance totale:", best_distance)
 
