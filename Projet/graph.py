@@ -55,18 +55,12 @@ class Graph:
             if current_node == end:
                 break
 
-            if current_cost > distances[current_node]:
-                continue
-
             for neighbor in self.graph.neighbors(current_node):
                 cost = self.graph[current_node][neighbor]['weight']
                 new_cost = current_cost + cost
                 if new_cost < distances[neighbor]:
                     distances[neighbor] = new_cost
                     heapq.heappush(heap, (new_cost, neighbor))
-
-        if distances[end] == float('inf'):
-            return None, None
 
         path = self.reconstruct_path(start, end, distances)
         toc = time.perf_counter()
@@ -155,9 +149,6 @@ class Graph:
             if current_node == end:
                 break
 
-            if current_cost > distances[current_node]:
-                continue
-
             for neighbor in self.graph.neighbors(current_node):
                 cost = self.graph[current_node][neighbor]['weight']
                 new_cost = current_cost + cost
@@ -167,10 +158,7 @@ class Graph:
                     heapq.heappush(heap, (priority, new_cost, neighbor))
                     came_from[neighbor] = current_node
 
-        if end not in came_from:
-            return None, None
-
-        path = self.rpath(start, end, came_from)
+        path = self.reverse_path(start, end, came_from)
         toc = time.perf_counter()
 
         print(f"Path: {path} Cost: {distances[end]}")
@@ -186,7 +174,7 @@ class Graph:
         distance = math.sqrt((pos2[0] - pos1[0]) ** 2 + (pos2[1] - pos1[1]) ** 2)
         return distance
 
-    def rpath(self, start, end, came_from):
+    def reverse_path(self, start, end, came_from):
         current_node = end
         path = [current_node]
         while current_node != start:
