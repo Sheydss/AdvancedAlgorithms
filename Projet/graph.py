@@ -2,6 +2,7 @@ import heapq
 import math
 import random
 import time
+from collections import deque
 
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -182,3 +183,81 @@ class Graph:
             path.append(current_node)
         path.reverse()
         return path
+
+    def voisinage(self, node, visited, destination_finale, solution_courante):
+        voisins = []
+        for v in self.graph.neighbors(node):
+            if v not in visited or v == destination_finale:
+                if v not in solution_courante:
+                    voisins.append(v)
+        return voisins
+
+    def valeur_contenu(self, source, destination):
+        if source != destination:
+            return self.graph[source][destination]['weight']
+        return float('inf')
+
+    def calculer_distance(self, chemin):
+        distance_totale = 0
+
+        for i in range(len(chemin) - 1):
+            source = chemin[i]
+            destination = chemin[i + 1]
+            distance = self.valeur_contenu(source, destination)
+            distance_totale += distance
+
+        return distance_totale
+
+    def recherche_tabou(self, solution_initiale, destination_finale, taille_tabou, iter_max):
+        print("---------------------------------------------------------")
+        print(f"Tabou Search: From {solution_initiale} to {destination_finale}")
+        tic = time.perf_counter()
+
+        nb_iter = 0
+        liste_tabou = deque(maxlen=taille_tabou)
+
+        solution_courante = [solution_initiale]
+        meilleurs_voisin = solution_courante
+        meilleure_globale = solution_courante
+
+        # Avoir une valeur élevée juste pour pouvoir comparer :
+        valeur_meilleure_globale = float('inf')
+
+        liste_tabou.append(solution_courante)
+
+        while nb_iter < iter_max:
+            valeur_meilleure = float('inf')
+
+            # Parcours des voisins
+            for voisin in self.voisinage(solution_courante[-1], liste_tabou, destination_finale, solution_courante):
+                valeur_to_voisin = self.valeur_contenu(solution_courante[-1], voisin)
+                # Selection du meilleur voisin
+                if valeur_to_voisin < valeur_meilleure:
+                    meilleurs_voisin = voisin
+                # Changement de la meilleure valeur pour continuer de comparer
+                valeur_meilleure = self.valeur_contenu(solution_courante[-1], voisin)
+
+            # Permet de garder la valeur du chemin avec le dernier meilleur voisin
+            if self.valeur_contenu(solution_courante[-1], meilleurs_voisin) < valeur_meilleure_globale:
+                meilleure_globale.append(meilleurs_voisin)
+                if solution_courante[-1] != meilleurs_voisin:
+                    valeur_meilleure_globale = self.valeur_contenu(solution_courante[-1], meilleurs_voisin)
+                nb_iter = 0
+            else:
+                nb_iter += 1
+
+            # Progression dans le graphe en prenant le meilleur voisin
+            solution_courante = meilleure_globale
+            liste_tabou.append(meilleurs_voisin)
+
+            if solution_courante[-1] == destination_finale:
+                break
+
+        distance_meilleure_globale = self.calculer_distance(meilleure_globale)
+
+        toc = time.perf_counter()
+
+        print(f"Path: {meilleure_globale} Cost: {distance_meilleure_globale}")
+        print(f"Duration: {toc - tic:0.4f} seconds")
+        print("---------------------------------------------------------")
+        return distance_meilleure_globale, meilleure_globale
