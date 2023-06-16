@@ -109,20 +109,22 @@ class Graph:
                 list_values.append(values)
             print(list_values)
 
-    def plot_graph(self, path=None, color='black'):
-        # Obtenir les arêtes du chemin
-        if path is not None:
-            edges = [(path[i], path[i + 1]) for i in range(len(path) - 1)]
-
+    def plot_graph(self, paths=None, colors=None):
         # Obtenir les positions des nœuds pour le tracé
         pos = nx.get_node_attributes(self.graph, 'pos')
 
-        # Dessiner le graphe avec les arêtes du chemin coloriées
+        # Dessiner le graphe avec les arêtes des chemins coloriées
         nx.draw(self.graph, pos=pos, width=0.8, with_labels=True)
-        if path is None:
-            nx.draw_networkx_edges(self.graph, pos=pos, edge_color=color)
-        else:
-            nx.draw_networkx_edges(self.graph, pos=pos, edgelist=edges, edge_color=color)
+
+        if paths is not None:
+            if colors is None:
+                colors = ['black'] * len(paths)  # Par défaut, utiliser la couleur noire pour tous les chemins
+            elif len(colors) < len(paths):
+                raise ValueError("Le nombre de couleurs fourni est inférieur au nombre de chemins.")
+
+            for path, color in zip(paths, colors):
+                edges = [(path[i], path[i + 1]) for i in range(len(path) - 1)]
+                nx.draw_networkx_edges(self.graph, pos=pos, edgelist=edges, edge_color=color, width=2)
 
         plt.show()
 
@@ -260,4 +262,4 @@ class Graph:
         print(f"Path: {meilleure_globale} Cost: {distance_meilleure_globale}")
         print(f"Duration: {toc - tic:0.4f} seconds")
         print("---------------------------------------------------------")
-        return distance_meilleure_globale, meilleure_globale
+        return meilleure_globale, distance_meilleure_globale
