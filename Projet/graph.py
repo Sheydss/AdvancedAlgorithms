@@ -254,7 +254,6 @@ class Graph:
 
             if solution_courante[-1] == destination_finale:
                 break
-
         distance_meilleure_globale = self.calculer_distance(meilleure_globale)
 
         toc = time.perf_counter()
@@ -263,3 +262,98 @@ class Graph:
         print(f"Duration: {toc - tic:0.4f} seconds")
         print("---------------------------------------------------------")
         return meilleure_globale, distance_meilleure_globale
+
+    def genetic_shortest_path(self, source, target, population_size=50, generations=100, mutation_rate=0.2):
+        print("---------------------------------------------------------")
+        print(f"Genetic Search: From {source} to {target}")
+        tic = time.perf_counter()
+        # Créer une population initiale aléatoire
+        population = []
+        for _ in range(population_size):
+            path = self.random_shortest_path(source, target)
+            population.append(path)
+        
+        for gen in range(generations):
+            #print(gen, ' génération')
+            # Évaluer la fitness de chaque individu de la population
+            fitness_scores = []
+            for individual in population:
+                individual = individual[:individual.index(target)]
+                #print(individual)
+                fitness = self.calculer_distance(individual)  # Longueur du chemin
+                fitness_scores.append(fitness)
+            
+            # si la sommes des fitness est de 0 alors tous les individus on trouvé un chemin direct
+            # pour éviter une division par 0 et ne pas faire des tours inutile je sors du for 
+            if sum(fitness_scores) != 0:
+                break
+            # Sélectionner les meilleurs individus pour la reproduction
+            selected_parents = []
+            for _ in range(int(population_size / 2)):
+                parent1 = self.random_selection(population, fitness_scores)
+                parent2 = self.random_selection(population, fitness_scores)
+                selected_parents.append((parent1, parent2))
+
+            # Reproduction (croisement)
+            offspring_population = []
+            for parents in selected_parents:
+                parent1, parent2 = parents
+                temp = self.crossover(parent1, parent2)
+                offspring_population.append(temp)
+
+            # Mutation
+            for i in range(len(offspring_population)):
+                if random.random() < mutation_rate:
+                    mp = len(offspring_population[i]) - 2
+                    if mp >= 1:
+                        mutation_point = random.randint(1, mp)
+                        p1 = self.graph.neighbors(offspring_population[i][mutation_point-1])
+                        p2 = self.graph.neighbors(offspring_population[i][mutation_point+1])
+                        p = list(set(p1).intersection(p2))
+                        new_node = random.choice(p)
+                        offspring_population[i][mutation_point] = new_node
+            
+            # Remplacement de la population
+            population = offspring_population
+        
+        # Retourner le chemin le plus court trouvé
+        best_path = min(population, key=lambda x: self.calculer_distance(x))
+        distance_meilleure_globale = self.calculer_distance(best_path)
+
+        toc = time.perf_counter()
+
+        print(f"Path: {best_path} Cost: {distance_meilleure_globale}")
+        print(f"Duration: {toc - tic:0.4f} seconds")
+        print("---------------------------------------------------------")
+        return best_path, distance_meilleure_globale
+
+    def random_shortest_path(self, source, target):
+        # Générer un chemin aléatoire entre la source et la cible
+        path = []
+        path.append(source)
+        current_node = source
+        while current_node != target:
+            neighbors = list(self.graph.neighbors(current_node))
+            next_node = random.choice(neighbors)
+            path.append(next_node)
+            current_node = next_node
+        return path
+
+
+    def random_selection(self, population, fitness_scores):
+        # Sélectionner un individu de la population de manière aléatoire pondérée par les scores de fitness
+        total_fitness = sum(fitness_scores)
+        probabilities = [(total_fitness - score) / total_fitness for score in fitness_scores]
+        return random.choices(population, probabilities)[0]
+
+    def crossover(self, parent1, parent2):
+        for i in range(1, len(parent1)):
+            for j in range(1, len(parent2)):
+                if parent2[j] == parent1[i]:
+                    if(i < j):
+                        #print(i, j, parent1, parent2, parent1[:i] + parent2[j:], sep=' - ')
+                        return parent1[:i] + parent2[j:]
+                    else:
+                        #print(j, i, parent2, parent1, parent2[:j] + parent1[i:], sep=' - ')
+                        return parent2[:j] + parent1[i:]
+        return parent1
