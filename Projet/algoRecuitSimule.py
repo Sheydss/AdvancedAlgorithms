@@ -40,20 +40,37 @@ class Graph:
         print(f"Generation done in {toc - tic:0.4f} seconds")
         print("---------------------------------------------------------")
 
-    def simulated_annealing(graph, start, goal):
+    def valeur_contenu(self, source, destination):
+        if source != destination:
+            try :
+                return self.graph[source][destination]['weight']
+            except :
+                print(source, destination, sep=' and ')
+                return 'a'
+        return float('inf')
+
+    def calculer_distance(self, chemin):
+        distance_totale = 0
+
+        for i in range(len(chemin) - 1):
+            source = chemin[i]
+            destination = chemin[i + 1]
+            distance = self.valeur_contenu(source, destination)
+            if distance == 'a':
+                print(chemin)
+            distance_totale += distance
+
+        return distance_totale
+    def simulated_annealing(self, start, goals):
         # Paramètres de l'algorithme
-        initial_temperature = 100.0
+        initial_temperature = 1000.0
         final_temperature = 0.1
-        cooling_factor = 0.95
+        cooling_factor = 0.995
         max_iterations = 1000
 
         # Initialisation
-        current_path = random.sample(list(graph.nodes()), len(graph.nodes()))
-        current_path.remove(start)
-        current_path.remove(goal)
-        current_path.insert(0, start)
-        current_path.append(goal)
-        current_distance = calculate_total_distance(graph, current_path)
+        current_path = [start] + random.sample(goals, len(goals))
+        current_distance = self.calculate_total_distance(current_path)
         best_path = current_path.copy()
         best_distance = current_distance
         temperature = initial_temperature
@@ -61,11 +78,12 @@ class Graph:
 
         # Boucle principale
         while temperature > final_temperature and iteration < max_iterations:
-            neighbor = random_neighbor(current_path)
-            neighbor_distance = calculate_total_distance(graph, neighbor)
+            # Sélectionner un voisin aléatoire
+            neighbor = self.get_random_neighbor(current_path)
+            neighbor_distance = self.calculate_total_distance(neighbor)
             distance_diff = neighbor_distance - current_distance
 
-            if distance_diff < 0 or random.random() < acceptance_probability(distance_diff, temperature):
+            if distance_diff < 0 or random.random() < self.acceptance_probability(distance_diff, temperature):
                 current_path = neighbor
                 current_distance = neighbor_distance
 
@@ -73,74 +91,39 @@ class Graph:
                     best_path = current_path.copy()
                     best_distance = current_distance
 
-            temperature = cooling_schedule(temperature, iteration)
+            temperature = self.cooling_schedule(temperature, iteration)
             iteration += 1
 
         return best_path, best_distance
 
-
-    """"
-    def calculate_total_distance(path, cities):
-        # Calcule la distance totale d'un chemin donné
-        total_distance = 0
-        for i in range(len(path)):
-            city1 = cities[path[i]]
-            city2 = cities[path[(i + 1) % len(path)]]
-            total_distance += calculate_distance(city1, city2)
-        return total_distance
-
-    def random_neighbor(path):
-        # Génère un voisin aléatoire à partir du chemin actuel
+    def get_random_neighbor(self, path):
+        # Sélectionner un point aléatoire dans le chemin
+        random_index = random.randint(1, len(path) - 2)
         neighbor = path.copy()
-        index1 = random.randint(0, len(path) - 1)
-        index2 = random.randint(0, len(path) - 1)
-        neighbor[index1], neighbor[index2] = neighbor[index2], neighbor[index1]
+
+        # Permuter le point sélectionné avec un autre point aléatoire
+        random_neighbor_index = random.randint(1, len(path) - 2)
+        neighbor[random_index], neighbor[random_neighbor_index] = neighbor[random_neighbor_index], neighbor[random_index]
+
         return neighbor
 
+    def calculate_total_distance(self, path):
+        """
+        total_distance = 0
+        for i in range(len(path) - 1):
+            node1 = path[i]
+            node2 = path[i + 1]
+            total_distance += self.graph[node1][node2]['weight']
+        """
+        total_distance = self.calculer_distance(path)
+        return total_distance
+
     def acceptance_probability(distance_diff, temperature):
-        # Calcule la probabilité d'accepter un chemin moins optimal
         return math.exp(-distance_diff / temperature)
 
-    def cooling_schedule(initial_temperature, iteration):
-        # Schéma de refroidissement pour réduire la température au fil des itérations
-        return initial_temperature * (0.95 ** iteration)
-
-    def simulated_annealing(cities):
-        # Paramètres de l'algorithme
-        initial_temperature = 100.0
-        final_temperature = 0.1
-        max_iterations = 1000
-
-        # Création d'un chemin initial aléatoire
-        path = list(range(len(cities)))
-        random.shuffle(path)
-
-        # Initialisation
-        best_path = path.copy()
-        current_distance = calculate_total_distance(path, cities)
-        best_distance = current_distance
-        temperature = initial_temperature
-        iteration = 0
-
-        # Boucle principale
-        while temperature > final_temperature and iteration < max_iterations:
-            neighbor = random_neighbor(path)
-            neighbor_distance = calculate_total_distance(neighbor, cities)
-            distance_diff = neighbor_distance - current_distance
-
-            if distance_diff < 0 or random.random() < acceptance_probability(distance_diff, temperature):
-                path = neighbor
-                current_distance = neighbor_distance
-
-                if current_distance < best_distance:
-                    best_path = path.copy()
-                    best_distance = current_distance
-
-            temperature = cooling_schedule(initial_temperature, iteration)
-            iteration += 1
-
-        return best_path, best_distance
-    """
+    def cooling_schedule(temperature, iteration):
+        cooling_factor = 0.995
+        return temperature * cooling_factor
 
     def plot_graph(self, path=None, color='black'):
         # Obtenir les arêtes du chemin

@@ -11,10 +11,10 @@ if __name__ == '__main__':
 
     # Exemple d'utilisation
     cities = [
-        1,3,5
+        1,3,5,9
     ]
 
-    best_path, best_distance = algo.Graph.simulated_annealing(cities)
+    best_path, best_distance = algo.Graph.simulated_annealing(graph, 1, cities)
     print("Meilleur chemin trouvé:", best_path)
     print("Distance totale:", best_distance)
 
