@@ -263,7 +263,7 @@ class Graph:
         print("---------------------------------------------------------")
         return meilleure_globale, distance_meilleure_globale
 
-    def genetic_shortest_path(self, source, target, population_size=50, generations=100, mutation_rate=0.2):
+    def genetic_search(self, source, target, population_size=50, generations=100, mutation_rate=0.2):
         print("---------------------------------------------------------")
         print(f"Genetic Search: From {source} to {target}")
         tic = time.perf_counter()
@@ -326,6 +326,7 @@ class Graph:
         print(f"Duration: {toc - tic:0.4f} seconds")
         print("---------------------------------------------------------")
         return best_path, distance_meilleure_globale
+
 
     def random_shortest_path(self, source, target):
         # Générer un chemin aléatoire entre la source et la cible
