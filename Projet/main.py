@@ -16,7 +16,7 @@ if __name__ == '__main__':
     num_nodes = 10
     max_edges_per_node = 5
 
-    graph = g.Graph(num_nodes, max_edges_per_node)
+    graph = algo.Graph(num_nodes, max_edges_per_node)
 
     start = 1
     end = 5

@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 
 
-class Graph:
+class Graph2:
     def __init__(self, num_nodes, max_edge):
         self.graph = nx.Graph()
         self.generate_random_graph(num_nodes, max_edge, 10, 100)
