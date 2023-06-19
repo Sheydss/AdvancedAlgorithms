@@ -1,4 +1,5 @@
 import heapq
+import itertools
 import math
 import random
 import time
@@ -8,7 +9,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 
 
-class Graph:
+class Graph2:
     def __init__(self, num_nodes, max_edge):
         self.graph = nx.Graph()
         self.generate_random_graph(num_nodes, max_edge, 10, 100)
@@ -42,9 +43,6 @@ class Graph:
         print("---------------------------------------------------------")
 
     def dijkstra(self, start, end):
-        print("---------------------------------------------------------")
-        print(f"Dijkstra Search: From {start} to {end}")
-        tic = time.perf_counter()
 
         distances = {node: float('inf') for node in self.graph.nodes}
         distances[start] = 0
@@ -64,11 +62,6 @@ class Graph:
                     heapq.heappush(heap, (new_cost, neighbor))
 
         path = self.reconstruct_path(start, end, distances)
-        toc = time.perf_counter()
-
-        print(f"Path : {path} Cost : {distances[end]}")
-        print(f"Duration : {toc - tic:0.4f} seconds")
-        print("---------------------------------------------------------")
 
         return path, distances[end]
 
@@ -129,9 +122,6 @@ class Graph:
         plt.show()
 
     def a_star(self, start, end):
-        print("---------------------------------------------------------")
-        print(f"A* Search: From {start} to {end}")
-        tic = time.perf_counter()
 
         # Distances du point de départ à chaque nœud (g-cost)
         distances = {node: float('inf') for node in self.graph.nodes}
@@ -162,11 +152,6 @@ class Graph:
                     came_from[neighbor] = current_node
 
         path = self.reverse_path(start, end, came_from)
-        toc = time.perf_counter()
-
-        print(f"Path: {path} Cost: {distances[end]}")
-        print(f"Duration: {toc - tic:0.4f} seconds")
-        print("---------------------------------------------------------")
 
         return path, distances[end]
 
@@ -210,10 +195,7 @@ class Graph:
 
         return distance_totale
 
-    def recherche_tabou(self, solution_initiale, destination_finale, taille_tabou, iter_max):
-        print("---------------------------------------------------------")
-        print(f"Tabou Search: From {solution_initiale} to {destination_finale}")
-        tic = time.perf_counter()
+    def tabou_search(self, solution_initiale, destination_finale, taille_tabou, iter_max):
 
         nb_iter = 0
         liste_tabou = deque(maxlen=taille_tabou)
@@ -255,12 +237,6 @@ class Graph:
             if solution_courante[-1] == destination_finale:
                 break
         distance_meilleure_globale = self.calculer_distance(meilleure_globale)
-
-        toc = time.perf_counter()
-
-        print(f"Path: {meilleure_globale} Cost: {distance_meilleure_globale}")
-        print(f"Duration: {toc - tic:0.4f} seconds")
-        print("---------------------------------------------------------")
         return meilleure_globale, distance_meilleure_globale
 
     def genetic_search(self, source, target, population_size=50, generations=100, mutation_rate=0.2):
@@ -358,3 +334,63 @@ class Graph:
                         #print(j, i, parent2, parent1, parent2[:j] + parent1[i:], sep=' - ')
                         return parent2[:j] + parent1[i:]
         return parent1
+
+    def best_itinerary(self, points, start, end):
+        print("---------------------------------------------------------")
+        print(f"Looking for Best Path:")
+        tic = time.perf_counter()
+
+        best_objects_path = [start]
+        chemin_global = []
+        cout_meilleur_chemin = float('inf')
+
+        for permutation in itertools.permutations(points):
+            _, cout_start = self.dijkstra(start, permutation[0])
+            cout_total = cout_start
+
+            paths = []
+
+            for i in range(len(permutation) - 1):
+                point_actuel = permutation[i]
+                point_suivant = permutation[i + 1]
+                path, cout = self.dijkstra(point_actuel, point_suivant)
+                cout_total += cout
+                paths.extend(path)
+
+            if cout_total < cout_meilleur_chemin:
+                cout_meilleur_chemin = cout_total
+                best_objects_path = list(permutation)
+                chemin_global = paths[:]
+
+        chemin_global = self.remove_consecutive_duplicates(chemin_global)
+        chemin_global.insert(0, start)
+        chemin_global.append(end)
+        toc = time.perf_counter()
+
+        print(f"Objects Path: {best_objects_path}")
+        print(f"Path: {chemin_global}")
+        print(f"Cost: {cout_meilleur_chemin}")
+        print(f"Duration: {toc - tic:0.4f} seconds")
+        print("---------------------------------------------------------")
+
+        return best_objects_path, cout_meilleur_chemin, chemin_global
+
+    def remove_consecutive_duplicates(self, lst):
+        result = [lst[0]]  # Ajouter le premier élément à la liste résultat
+
+        for i in range(1, len(lst)):
+            if lst[i] != lst[i - 1]:
+                result.append(lst[i])  # Ajouter l'élément à la liste résultat s'il est différent du précédent
+
+        return result
+
+    def base_itinerary_cost(self, path):
+        distance_totale = 0
+
+        for i in range(len(path) - 1):
+            source = path[i]
+            destination = path[i + 1]
+            _, distance = self.dijkstra(source, destination)
+            distance_totale += distance
+
+        return distance_totale
