@@ -17,11 +17,7 @@ class algoGenetic:
         for i in range(len(chemin) - 1):
             source = chemin[i]
             destination = chemin[i + 1]
-            try :
                 distance = self.valeur_contenu(source, destination)
-            except: 
-                print('error', chemin, source, destination, sep=' - ')
-                distance = 0
             distance_totale += distance
         return distance_totale
     
@@ -30,13 +26,9 @@ class algoGenetic:
         for _ in range(self.population_size):
             path = [start_node]
             current_node = start_node
-            # tant que tous les points de livrasons ne sont pas dans la liste et que nous ne sommes pas arrivé au point end_node
             while not(all(item in path for item in points) and current_node == end_node): 
-                # on récupère la liste des voisins de la node actuel
                 neighbors = list(self.graph.neighbors(current_node))
-                # on choisis aléatoirement un voisin
                 next_node = random.choice(neighbors)
-                # on ajoute le voisin au chemin et la node actuel devient le voisin précédent
                 path.append(next_node)
                 current_node = next_node
             population.append(path)
@@ -49,7 +41,6 @@ class algoGenetic:
         return fitness_scores
 
     def random_selection(self, population, fitness_scores):
-        # Sélectionner un individu de la population de manière aléatoire pondérée par les scores de fitness
         total_fitness = sum(fitness_scores)
         if total_fitness > 0:
             probabilities = [(total_fitness - score) / total_fitness for score in fitness_scores]

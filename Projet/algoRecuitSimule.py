@@ -17,7 +17,6 @@ class Graph:
         print(f"Generating Graph with {num_nodes} nodes")
         tic = time.perf_counter()
 
-
         for node in range(num_nodes):
             x = random.uniform(0, 100)
             y = random.uniform(0, 100)
@@ -107,10 +106,8 @@ class Graph:
 
 
     def plot_graph(self, path=None, color='black'):
-
         if path is not None:
             edges = [(path[i], path[i + 1]) for i in range(len(path) - 1)]
-
 
         pos = nx.get_node_attributes(self.graph, 'pos')
 

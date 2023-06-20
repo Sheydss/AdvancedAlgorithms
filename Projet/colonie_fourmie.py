@@ -16,13 +16,11 @@ class Graph:
         print(f"Generating Graph with {num_nodes} nodes")
         tic = time.perf_counter()
 
-        # Ajouter les nœuds au graphe avec des coordonnées aléatoires
         for node in range(num_nodes):
             x = random.uniform(min_weight, max_weight)
             y = random.uniform(min_weight, max_weight)
             self.graph.add_node(node, pos=(x, y))
 
-        # Générer les arêtes avec des poids correspondant à la distance euclidienne
         for node in range(num_nodes):
             num_edges = random.randint(1, max_edges_per_node)
             dest_nodes = random.sample(range(num_nodes), num_edges)
@@ -50,17 +48,15 @@ class Graph:
             print(list_values)
 
     def plot_graph(self, paths=None, colors=None):
-        # Obtenir les positions des nœuds pour le tracé
         pos = nx.get_node_attributes(self.graph, 'pos')
 
-        # Dessiner le graphe avec les arêtes des chemins coloriées
         nx.draw(self.graph, pos=pos, width=0.8, with_labels=True)
 
         if paths is not None:
             if colors is None:
-                colors = ['black'] * len(paths)  # Par défaut, utiliser la couleur noire pour tous les chemins
+                colors = ['black'] * len(paths)
             elif len(colors) < len(paths):
-                raise ValueError("Le nombre de couleurs fourni est inférieur au nombre de chemins.")
+                raise ValueError("the number of color is inferior to the number of path")
 
             for path, color in zip(paths, colors):
                 edges = [(path[i], path[i + 1]) for i in range(len(path) - 1)]
@@ -110,7 +106,6 @@ def colonie_de_fourmis(graph, points, nombre_fourmis, alpha, beta, evaporation, 
         for j in range(n):
             distances[i, j] = distance(points[i], points[j])
 
-    # Trouver les indices des points a et b
     indice_a = points.index(point_a)
     indice_b = points.index(point_b)
 
