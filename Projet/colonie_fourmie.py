@@ -70,9 +70,7 @@ class Graph:
 
 
 def distance(point1, point2):
-    pos1 = graph.graph.nodes[point1]['pos']
-    pos2 = graph.graph.nodes[point2]['pos']
-    return int(math.sqrt((pos2[0] - pos1[0]) ** 2 + (pos2[1] - pos1[1]) ** 2))
+    return np.linalg.norm(np.array(point1) - np.array(point2))
 
 
 def initialiser_pheromones(n):
@@ -81,11 +79,14 @@ def initialiser_pheromones(n):
 
 def mettre_a_jour_pheromones(pheromones, chemin, cout_total, alpha, beta):
     n = pheromones.shape[0]
-    for i in range(n):
-        ville_courante = chemin[i]
-        ville_suivante = chemin[(i + 1) % n]
-        pheromones[ville_courante, ville_suivante] = (1 - alpha) * pheromones[ville_courante, ville_suivante] + alpha / cout_total
-        pheromones[ville_suivante, ville_courante] = pheromones[ville_courante, ville_suivante]
+    if len(chemin) == n:
+        for i in range(n):
+            ville_courante = chemin[i]
+            ville_suivante = chemin[(i + 1) % n]
+            pheromones[ville_courante, ville_suivante] = (1 - alpha) * pheromones[ville_courante, ville_suivante] + alpha / cout_total
+            pheromones[ville_suivante, ville_courante] = pheromones[ville_courante, ville_suivante]
+
+
 
 
 def choisir_prochaine_ville(pheromones, visites, ville_courante, alpha, beta):
@@ -101,12 +102,17 @@ def choisir_prochaine_ville(pheromones, visites, ville_courante, alpha, beta):
     return ville_suivante
 
 
-def colonie_de_fourmis(points, nombre_fourmis, alpha, beta, evaporation, iterations):
+def colonie_de_fourmis(graph, points, nombre_fourmis, alpha, beta, evaporation, iterations, point_a, point_b):
+    # ...
     n = len(points)
     distances = np.zeros((n, n))
     for i in range(n):
         for j in range(n):
             distances[i, j] = distance(points[i], points[j])
+
+    # Trouver les indices des points a et b
+    indice_a = points.index(point_a)
+    indice_b = points.index(point_b)
 
     pheromones = initialiser_pheromones(n)
     meilleur_chemin = None
@@ -119,11 +125,11 @@ def colonie_de_fourmis(points, nombre_fourmis, alpha, beta, evaporation, iterati
             visites = [False] * n
             chemin = []
             cout_total = 0
-            ville_courante = np.random.randint(n)
+            ville_courante = indice_a
             visites[ville_courante] = True
             chemin.append(ville_courante)
 
-            for _ in range(n - 1):
+            while ville_courante != indice_b:
                 ville_suivante = choisir_prochaine_ville(pheromones, visites, ville_courante, alpha, beta)
                 visites[ville_suivante] = True
                 chemin.append(ville_suivante)
@@ -141,26 +147,3 @@ def colonie_de_fourmis(points, nombre_fourmis, alpha, beta, evaporation, iterati
     execution_time = time.time() - start_time
 
     return meilleur_chemin, int(meilleur_cout), execution_time
-
-
-# Exemple d'utilisation
-num_nodes = 5
-max_edge = 3
-
-graph = Graph(num_nodes, max_edge)
-
-points = list(range(num_nodes))
-nombre_fourmis = 10
-alpha = 1.0
-beta = 2.0
-evaporation = 0.5
-iterations = 100
-
-meilleur_chemin, meilleur_cout, temps_execution = colonie_de_fourmis(points, nombre_fourmis, alpha, beta, evaporation, iterations)
-
-print("Meilleur chemin:", meilleur_chemin)
-print("Meilleur coût:", meilleur_cout)
-print("Temps d'exécution:", temps_execution, "secondes")
-
-# Afficher le graphe avec le meilleur chemin
-graph.plot_graph([meilleur_chemin])
