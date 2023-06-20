@@ -1,4 +1,5 @@
-import graph as g
+from graph import Graph2
+from algoGenetic import algoGenetic
 import random
 
 
@@ -16,14 +17,25 @@ if __name__ == '__main__':
     num_nodes = 10
     max_edges_per_node = 5
 
-    graph = algo.Graph(num_nodes, max_edges_per_node)
+    graph = Graph2(num_nodes, max_edges_per_node)
 
     start = 1
-    end = 5
+    end = 9
 
     # Générer la liste d'objets (sommets à visiter)
     obj = create_objects(2, num_nodes, start, end)
 
     # Détermine le meilleur chemin qui passe par les points générés
-    path, cost, chemin_g = graph.best_itinerary(obj, start, end)
-    graph.plot_graph([chemin_g], ['red'])
+    #path, cost, chemin_g = graph.best_itinerary(obj, start, end)
+     #[chemin_g], ['red']
+
+    # Liste des points à visiter
+    points_to_visit = [3, 5, 7]
+    ag = algoGenetic(graph.graph, 20, 20)
+    # Appel de l'algorithme génétique pour trouver le chemin le plus court
+    best_path = ag.genetic_algorithm(start, end, points_to_visit)
+    print("Meilleur chemin trouvé :", best_path)
+    print("Longueur du chemin :", ag.calculer_distance(best_path))
+
+
+    graph.plot_graph()
