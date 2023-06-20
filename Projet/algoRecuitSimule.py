@@ -17,13 +17,11 @@ class Graph:
         print(f"Generating Graph with {num_nodes} nodes")
         tic = time.perf_counter()
 
-        # Ajouter les nœuds au graphe avec des coordonnées aléatoires
         for node in range(num_nodes):
             x = random.uniform(0, 100)
             y = random.uniform(0, 100)
             self.graph.add_node(node, pos=(x, y))
 
-        # Générer les arêtes avec des poids correspondant à la distance euclidienne
         for node in range(num_nodes):
             num_edges = random.randint(1, max_edges_per_node)
             dest_nodes = random.sample(range(num_nodes), num_edges)
@@ -94,14 +92,11 @@ class Graph:
 
 
     def plot_graph(self, path=None, color='black'):
-        # Obtenir les arêtes du chemin
         if path is not None:
             edges = [(path[i], path[i + 1]) for i in range(len(path) - 1)]
 
-        # Obtenir les positions des nœuds pour le tracé
         pos = nx.get_node_attributes(self.graph, 'pos')
 
-        # Dessiner le graphe avec les arêtes du chemin coloriées
         nx.draw(self.graph, pos=pos, width=0.8, with_labels=True)
         if path is None:
             nx.draw_networkx_edges(self.graph, pos=pos, edge_color=color)
