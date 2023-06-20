@@ -17,13 +17,12 @@ class Graph:
         print(f"Generating Graph with {num_nodes} nodes")
         tic = time.perf_counter()
 
-        # Ajouter les nœuds au graphe avec des coordonnées aléatoires
+
         for node in range(num_nodes):
             x = random.uniform(0, 100)
             y = random.uniform(0, 100)
             self.graph.add_node(node, pos=(x, y))
 
-        # Générer les arêtes avec des poids correspondant à la distance euclidienne
         for node in range(num_nodes):
             num_edges = random.randint(1, max_edges_per_node)
             dest_nodes = random.sample(range(num_nodes), num_edges)
@@ -39,40 +38,32 @@ class Graph:
         print(f"Generation done in {toc - tic:0.4f} seconds")
         print("---------------------------------------------------------")
 
-    def get_edge_weight(self, source, destination):
-        try:
-            return self.graph[source][destination]['weight']
-        except KeyError:
-            return float('inf')
-
-    def calculate_path_distance(self, path):
-        total_distance = 0
-        for i in range(len(path) - 1):
-            source = path[i]
-            destination = path[i + 1]
-            weight = self.get_edge_weight(source, destination)
-            total_distance += weight
-        return total_distance
-
     def simulated_annealing(self, start, goals):
         initial_temperature = 1000.0
         final_temperature = 0.1
         cooling_factor = 0.995
         max_iterations = 1000
 
+        print(self.graph.nodes)
+        print(self.graph.edges)
+
+        
         current_path = [start] + random.sample(goals, len(goals))
-        current_distance = self.calculate_path_distance(current_path)
+        current_distance = self.calculate_total_distance(current_path)
         best_path = current_path.copy()
         best_distance = current_distance
         temperature = initial_temperature
         iteration = 0
 
+        
         while temperature > final_temperature and iteration < max_iterations:
+
             neighbor = self.get_random_neighbor(current_path)
-            neighbor_distance = self.calculate_path_distance(neighbor)
+            print(neighbor)
+            neighbor_distance = self.calculate_total_distance(neighbor)
             distance_diff = neighbor_distance - current_distance
 
-            if distance_diff < 0 or random.random() < math.exp(-distance_diff / temperature):
+            if distance_diff < 0 or random.random() < self.acceptance_probability(distance_diff, temperature):
                 current_path = neighbor
                 current_distance = neighbor_distance
 
@@ -80,28 +71,49 @@ class Graph:
                     best_path = current_path.copy()
                     best_distance = current_distance
 
-            temperature *= cooling_factor
+            temperature = self.cooling_schedule(temperature, iteration)
             iteration += 1
 
         return best_path, best_distance
 
+
+
+    def calculate_total_distance(self, path):
+        total_distance = 0
+        for i in range(len(path) - 1):
+            node1 = path[i]
+            node2 = path[i + 1]
+            total_distance += self.graph[node1][node2]['weight']
+        return total_distance
+
     def get_random_neighbor(self, path):
+
         random_index = random.randint(1, len(path) - 2)
         neighbor = path.copy()
+
+
         random_neighbor_index = random.randint(1, len(path) - 2)
         neighbor[random_index], neighbor[random_neighbor_index] = neighbor[random_neighbor_index], neighbor[random_index]
+
         return neighbor
+
+    def acceptance_probability(self, distance_diff, temperature):
+        return math.exp(-distance_diff / temperature)
+
+    def cooling_schedule(self, temperature, iteration):
+        cooling_factor = 0.995
+        return temperature * cooling_factor
+
 
 
     def plot_graph(self, path=None, color='black'):
-        # Obtenir les arêtes du chemin
+
         if path is not None:
             edges = [(path[i], path[i + 1]) for i in range(len(path) - 1)]
 
-        # Obtenir les positions des nœuds pour le tracé
+
         pos = nx.get_node_attributes(self.graph, 'pos')
 
-        # Dessiner le graphe avec les arêtes du chemin coloriées
         nx.draw(self.graph, pos=pos, width=0.8, with_labels=True)
         if path is None:
             nx.draw_networkx_edges(self.graph, pos=pos, edge_color=color)

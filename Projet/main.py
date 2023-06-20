@@ -86,6 +86,7 @@ if __name__ == '__main__':
     graph.plot_graph([chemin_g], ['red'])
 
 """
+
 from reportlab.lib.colors import red
 
 import algoRecuitSimule as algo
