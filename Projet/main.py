@@ -1,5 +1,5 @@
-from graph import Graph2
-from algoGenetic import algoGenetic
+"""
+import algoRecuitSimule as algo
 import random
 
 
@@ -26,16 +26,27 @@ if __name__ == '__main__':
     obj = create_objects(2, num_nodes, start, end)
 
     # Détermine le meilleur chemin qui passe par les points générés
-    #path, cost, chemin_g = graph.best_itinerary(obj, start, end)
-     #[chemin_g], ['red']
+    path, cost, chemin_g = graph.best_itinerary(obj, start, end)
+    graph.plot_graph([chemin_g], ['red'])
 
-    # Liste des points à visiter
-    points_to_visit = [3, 5, 7]
-    ag = algoGenetic(graph.graph, 20, 20)
-    # Appel de l'algorithme génétique pour trouver le chemin le plus court
-    best_path = ag.genetic_algorithm(start, end, points_to_visit)
-    print("Meilleur chemin trouvé :", best_path)
-    print("Longueur du chemin :", ag.calculer_distance(best_path))
+"""
+from reportlab.lib.colors import red
 
+import algoRecuitSimule as algo
 
-    graph.plot_graph()
+if __name__ == '__main__':
+    # Exemple d'utilisation
+    num_nodes = 10000
+    max_edges_per_node = 1
+
+    graph = algo.Graph(num_nodes, max_edges_per_node)
+
+    # Exemple d'utilisation
+    cities = [
+        1,3,5,9,45,59,500,30,70,12,500,674
+    ]
+
+    best_path, best_distance = algo.Graph.simulated_annealing(graph, 1000, cities)
+    print("Meilleur chemin trouvé:", best_path)
+    print("Distance totale:", best_distance)
+    algo.Graph.plot_graph([best_path], ['red'])
